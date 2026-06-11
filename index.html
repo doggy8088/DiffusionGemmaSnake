@@ -89,6 +89,25 @@
             color: #666;
             font-size: 14px;
         }
+
+        .footer {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #00d8ef;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -107,6 +126,11 @@
     </div>
 
     <div class="instructions">使用方向鍵控制控制蛇移動</div>
+
+    <footer class="footer">
+        © 2026 本工具由 <a href="https://www.facebook.com/will.fans/" target="_blank" rel="noopener noreferrer">Will 保哥的技術交流中心</a> 設計、開發與維護 | 
+        <a href="https://github.com/doggy8088/DiffusionGemmaSnake" target="_blank" rel="noopener noreferrer">GitHub 倉儲</a>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
