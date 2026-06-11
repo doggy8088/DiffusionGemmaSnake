@@ -1,3 +1,15 @@
+# 貪食蛇遊戲
+
+以下為使用 DiffusionGemma 產生此頁面的指令：
+
+```sh
+uv run python -m mlx_vlm.generate \
+  --model mlx-community/diffusiongemma-26B-A4B-it-4bit \
+  --max-tokens 25600 \
+  --temperature 0.0 \
+  --prompt "請用 VanillaJS 設計一款貪食蛇遊戲，畫面精美"
+```
+
 這是一個使用純 JavaScript (Vanilla JS)、HTML 和 CSS 編的貪食蛇遊戲。為了達到「畫面精美」，我採用了**霓虹風** (Neon Style)設計，並加入了流暢的動畫效果與陰影特效。
 
 你可以直接將以下代碼儲存為 `.html` 檔並用瀏覽器開啟。
