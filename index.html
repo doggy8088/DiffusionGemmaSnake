@@ -4,130 +4,438 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>霓虹貪食蛇遊戲</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Orbitron:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0a12;
-            --snake-color: #00f2ff;
-            --snake-head: #0088ff;
-            --food-color: #ff007b;
-            --text-color: #ffffff;
+            --bg: #06070d;
+            --panel: rgba(7, 12, 24, 0.72);
+            --panel-border: rgba(116, 167, 255, 0.18);
+            --cyan: #4efeff;
+            --cyan-deep: #12b5ff;
+            --pink: #ff4ea8;
+            --violet: #9d7bff;
+            --text: #eff5ff;
+            --muted: #bccee8;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
         }
 
         body {
             margin: 0;
-            padding: 0;
+            font-family: 'Manrope', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top, rgba(78, 254, 255, 0.10), transparent 20%),
+                radial-gradient(circle at 80% 10%, rgba(255, 78, 168, 0.08), transparent 18%),
+                linear-gradient(135deg, #04050a 0%, #080c16 35%, #030409 100%);
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            inset: -20%;
+            pointer-events: none;
+            filter: blur(80px);
+            opacity: 0.35;
+            animation: drift 14s ease-in-out infinite alternate;
+        }
+
+        body::before { background: radial-gradient(circle, rgba(78, 254, 255, 0.18) 0%, transparent 30%); }
+        body::after { background: radial-gradient(circle, rgba(255, 78, 168, 0.18) 0%, transparent 32%); animation-delay: -7s; }
+
+        @keyframes drift {
+            from { transform: translate3d(-3%, -2%, 0) scale(1); }
+            to { transform: translate3d(3%, 2%, 0) scale(1.08); }
+        }
+
+        .page-shell {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 28px 18px 24px;
+        }
+
+        .layout {
+            width: min(1180px, 100%);
+            display: grid;
+            grid-template-columns: 1.02fr 1fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            box-shadow: 0 18px 40px rgba(1, 8, 20, 0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+            backdrop-filter: blur(18px);
+        }
+
+        .hero {
+            padding: 24px;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-color);
-            overflow: hidden;
+            gap: 10px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .eyebrow::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--pink));
+            box-shadow: 0 0 18px rgba(78, 254, 255, 0.9);
+        }
+
+        h1 {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.15rem);
+            line-height: 1.05;
+            letter-spacing: 0.04em;
+        }
+
+        .accent {
+            background: linear-gradient(135deg, var(--cyan), #d7fffd 45%, var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 22px rgba(78, 254, 255, 0.18);
+        }
+
+        .lead {
+            color: var(--muted);
+            font-size: 1.03rem;
+            line-height: 1.6;
+            max-width: 36ch;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-card {
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .stat-label {
+            display: block;
+            color: #9ec5ff;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            color: #ffffff;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(9, 17, 32, 0.8);
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .game-card {
+            padding: 16px;
+        }
+
+        .game-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--cyan);
+            background: rgba(78, 254, 255, 0.08);
+            border: 1px solid rgba(78, 254, 255, 0.18);
+            border-radius: 999px;
+            padding: 8px 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .game-shell {
+            position: relative;
+            border-radius: 24px;
+            padding: 10px;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+                linear-gradient(140deg, rgba(0, 170, 255, 0.08), rgba(255, 78, 168, 0.06));
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 16px 30px rgba(2, 7, 14, 0.55);
+        }
+
+        .game-shell::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 0 50px rgba(78, 254, 255, 0.12);
+            pointer-events: none;
         }
 
         .game-container {
             position: relative;
-            box-shadow: 0 0 50px rgba(0, 242, 255, 0.2);
-            border: 4px solid #333;
-            border-radius: 10px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 0 28px rgba(78, 254, 255, 0.10), inset 0 0 16px rgba(0, 0, 0, 0.35);
         }
 
         canvas {
             display: block;
-            background: radial-gradient(circle, #161625 0%, #0a0a12 100%);
+            width: 100%;
+            height: auto;
+            background:
+                radial-gradient(circle at top, rgba(78, 254, 255, 0.04), transparent 20%),
+                linear-gradient(180deg, #101624 0%, #070a12 100%);
         }
 
         .ui-layer {
             position: absolute;
-            top: -50px;
-            width: 100%;
+            top: 10px;
+            left: 10px;
+            right: 10px;
             display: flex;
             justify-content: space-between;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            align-items: center;
+            z-index: 2;
+            pointer-events: none;
         }
 
-        .score-board {
-            color: var(--snake-color);
+        .score-board,
+        .speed-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(7, 11, 20, 0.72);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #effaff;
+            text-shadow: 0 0 14px rgba(78, 254, 255, 0.25);
+            font-weight: 700;
+            font-size: 0.98rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .score-board strong,
+        .speed-pill strong {
+            color: var(--cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.02rem;
         }
 
         .overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 2rem;
-            border-radius: 15px;
-            border: 1px solid var(--snake-color);
+            inset: 0;
             display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(145deg, rgba(5, 9, 17, 0.88), rgba(10, 16, 30, 0.92));
+            border-radius: 18px;
+            padding: 18px;
+            z-index: 3;
         }
+
+        .overlay-card {
+            width: min(320px, 100%);
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .overlay-card h2 {
+            margin: 0 0 4px;
+            font-family: 'Orbitron', sans-serif;
+            color: #ffe1ef;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 1.1rem;
+        }
+
+        .overlay-card p { color: var(--muted); margin: 8px 0 0; }
 
         button {
-            margin-top: 20px;
-            padding: 10px 25px;
-            font-size: 18px;
-            background: var(--snake-color);
-            border: none;
-            border-radius: 5px;
+            margin-top: 14px;
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--cyan), #8dffff 55%, #8af5ff 100%);
+            color: #04111f;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            letter-spacing: 0.08em;
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 12px 18px rgba(78, 254, 255, 0.22);
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
         }
 
-        button:hover {
-            transform: scale(1.1);
-            background: #00d8ef;
-        }
+        button:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 14px 24px rgba(78, 254, 255, 0.32); }
 
         .instructions {
-            margin-top: 20px;
-            color: #666;
-            font-size: 14px;
+            margin-top: 10px;
+            color: #a9b9d4;
+            font-size: 0.96rem;
         }
 
         .footer {
-            position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            color: #888;
+            position: static;
+            width: 100%;
+            margin-top: 14px;
+            font-size: 0.78rem;
+            color: #98abc8;
             text-align: center;
+            z-index: 5;
         }
 
-        .footer a {
-            color: #00d8ef;
-            text-decoration: none;
+        .footer a { color: #8beeff; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        .touch-controls {
+            display: none;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
         }
 
-        .footer a:hover {
-            text-decoration: underline;
+        .touch-btn {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            color: var(--text);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.92rem;
+            letter-spacing: 0.08em;
+            padding: 10px 12px;
+            touch-action: manipulation;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        @media (max-width: 980px) {
+            .layout { grid-template-columns: 1fr; }
+            .page-shell { padding-bottom: 18px; }
+        }
+
+        @media (max-width: 640px) {
+            .page-shell { padding: 12px 10px 18px; }
+            .hero, .game-card { padding: 14px; }
+            .stat-grid { grid-template-columns: 1fr; }
+            .game-topbar { flex-direction: column; align-items: stretch; }
+            .mini-badge { justify-content: center; }
+            .ui-layer { position: static; margin-bottom: 8px; }
+            .score-board, .speed-pill { font-size: 0.88rem; padding: 7px 9px; }
+            .touch-controls { display: grid; }
+            .instructions { font-size: 0.9rem; }
+            .footer { font-size: 0.72rem; line-height: 1.5; }
         }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <div class="ui-layer">
-            <div class="score-board">SCORE: <span id="score">0</span></div>
-        </div>
-        <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <main class="page-shell">
+        <section class="layout">
+            <article class="panel hero">
+                <div>
+                    <div class="eyebrow">Neon Arcade</div>
+                    <h1>把你的手指變成 <span class="accent">霓虹導線</span></h1>
+                    <p class="lead">在炫目網格上追逐閃爍的能量球，盡可能長壽、快跑、再快一點。這個版本用更明亮的層次、流動的光感和更清晰的資訊面板，把遊戲變成一場小型派對。</p>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-card"><span class="stat-label">目前分數</span><span class="stat-value" id="scoreCard">0</span></div>
+                    <div class="stat-card"><span class="stat-label">最高紀錄</span><span class="stat-value" id="bestCard">0</span></div>
+                    <div class="stat-card"><span class="stat-label">速度</span><span class="stat-value" id="speedCard">100</span></div>
+                </div>
+                <div class="chip-row">
+                    <span class="chip">方向鍵移動</span>
+                    <span class="chip">吃到能量球加速</span>
+                    <span class="chip">撞牆或撞到自己結束</span>
+                </div>
+            </article>
 
-        <div id="gameOver" class="overlay">
-            <h1 style="color: var(--food-color)">GAME OVER</h1>
-            <p>你的分數： <span id="finalScore">0</span></p>
-            <button onclick="resetGame()">重新遊戲</button>
-        </div>
-    </div>
+            <article class="panel game-card">
+                <div class="game-topbar">
+                    <div class="mini-badge">⚡ Neon Snake</div>
+                    <div class="mini-badge">🕹️ 方向鍵控制</div>
+                </div>
+                <div class="game-shell">
+                    <div class="game-container">
+                        <div class="ui-layer">
+                            <div class="score-board">SCORE <strong id="score">0</strong></div>
+                            <div class="speed-pill">SPEED <strong id="speed">100</strong></div>
+                        </div>
+                        <canvas id="gameCanvas" width="600" height="400"></canvas>
 
-    <div class="instructions">使用方向鍵控制控制蛇移動</div>
+                        <div id="gameOver" class="overlay">
+                            <div class="overlay-card">
+                                <h2>GAME OVER</h2>
+                                <p>本局得分：<strong id="finalScore">0</strong></p>
+                                <button onclick="resetGame()">重新挑戰</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="instructions">使用方向鍵控制蛇身，盡量吃到更多能量球，讓你的霓虹長度一路飆升。</div>
+                <div class="touch-controls" aria-label="觸控方向鍵">
+                    <button type="button" class="touch-btn" data-dir="ArrowUp">↑ 上</button>
+                    <button type="button" class="touch-btn" data-dir="ArrowDown">↓ 下</button>
+                    <button type="button" class="touch-btn" data-dir="ArrowLeft">← 左</button>
+                    <button type="button" class="touch-btn" data-dir="ArrowRight">→ 右</button>
+                </div>
+            </article>
+        </section>
 
-    <footer class="footer">
+        <footer class="footer">
         © 2026 本工具由 <a href="https://www.facebook.com/will.fans/" target="_blank" rel="noopener noreferrer">Will 保哥的技術交流中心</a> 設計、開發與維護 | 
         <a href="https://github.com/doggy8088/DiffusionGemmaSnake" target="_blank" rel="noopener noreferrer">GitHub</a> |
         <a href="https://www.youtube.com/watch?v=yvji3zN5TaY" target="_blank" rel="noopener noreferrer">開發影片</a>
@@ -137,6 +445,10 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const scoreCardElement = document.getElementById('scoreCard');
+        const bestCardElement = document.getElementById('bestCard');
+        const speedElement = document.getElementById('speed');
+        const speedCardElement = document.getElementById('speedCard');
         const finalScoreElement = document.getElementById('finalScore');
         const gameOverScreen = document.getElementById('gameOver');
 
@@ -145,6 +457,7 @@
         let tileY = canvas.height / grid;
 
         let score = 0;
+        let bestScore = Number(localStorage.getItem('neon-snake-best') || 0);
         let snake = [{x: 10, y: 10}];
         let food = {x: 5, y: 5};
         let dx = 0;
@@ -152,6 +465,15 @@
         let nextDx = 0;
         let nextDy = 0;
         let gameSpeed = 100;
+
+        function updateHud() {
+            const currentSpeed = Math.max(45, gameSpeed);
+            scoreElement.textContent = score;
+            scoreCardElement.textContent = score;
+            bestCardElement.textContent = bestScore;
+            speedElement.textContent = currentSpeed;
+            speedCardElement.textContent = currentSpeed;
+        }
 
         function main() {
             if (checkGameOver()) {
@@ -212,10 +534,13 @@
             // 檢查是否吃到食物
             if (head.x === food.x && head.y === food.y) {
                 score += 10;
-                scoreElement.innerText = score;
+                if (score > bestScore) {
+                    bestScore = score;
+                    localStorage.setItem('neon-snake-best', String(bestScore));
+                }
+                updateHud();
                 generateFood();
-                // 積分增加速度
-                if(gameSpeed > 50) gameSpeed -= 2;
+                if(gameSpeed > 45) gameSpeed -= 2;
             } else {
                 snake.pop();
             }
@@ -252,13 +577,13 @@
         }
 
         function showGameOver() {
-            gameOverScreen.style.display = 'block';
-            finalScoreElement.innerText = score;
+            gameOverScreen.style.display = 'flex';
+            finalScoreElement.textContent = score;
         }
 
         function resetGame() {
             score = 0;
-            scoreElement.innerText = score;
+            updateHud();
             snake = [{x: 10, y: 10}];
             dx = 0; dy = 0;
             nextDx = 0; nextDy = 0;
@@ -267,16 +592,23 @@
             main();
         }
 
-        window.addEventListener('keydown', e => {
-            const key = e.key;
-            // 防止反向轉向 180 度
+        function queueDirection(key) {
             if (key === 'ArrowUp' && dy === 0) { nextDx = 0; nextDy = -1; }
             if (key === 'ArrowDown' && dy === 0) { nextDx = 0; nextDy = 1; }
             if (key === 'ArrowLeft' && dx === 0) { nextDx = -1; nextDy = 0; }
             if (key === 'ArrowRight' && dx === 0) { nextDx = 1; nextDy = 0; }
+        }
+
+        window.addEventListener('keydown', e => {
+            queueDirection(e.key);
+        });
+
+        document.querySelectorAll('.touch-btn').forEach(button => {
+            button.addEventListener('click', () => queueDirection(button.dataset.dir));
         });
 
         // 初始化啟遊戲
+        updateHud();
         generateFood();
         main();
     </script>
