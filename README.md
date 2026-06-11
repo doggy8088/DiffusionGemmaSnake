@@ -280,7 +280,10 @@
 1. 複製代碼並存為 `snake.html`。
 2. 使用任何現代瀏覽器（Chrome, Edge, Firefox 等）開啟。
 3. 使用鍵盤的**方向鍵**控制遊戲。
+
+```
 ==========
 Prompt: 27 tokens, 433.313 tokens-per-sec
 Generation: 2714 tokens, 63.230 tokens-per-sec
 Peak memory: 18.607 GB
+```
